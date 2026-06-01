@@ -1,0 +1,76 @@
+<html>
+<head>
+<title>GamePanel.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #bcbec4;}
+.s3 { color: #2aacb8;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+GamePanel.java</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">javax</span><span class="s2">.</span><span class="s1">swing</span><span class="s2">.*;</span>
+<span class="s0">import </span><span class="s1">java</span><span class="s2">.</span><span class="s1">awt</span><span class="s2">.*;</span>
+<span class="s0">import </span><span class="s1">java</span><span class="s2">.</span><span class="s1">awt</span><span class="s2">.</span><span class="s1">event</span><span class="s2">.</span><span class="s1">ActionListener</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">java</span><span class="s2">.</span><span class="s1">awt</span><span class="s2">.</span><span class="s1">event</span><span class="s2">.</span><span class="s1">ActionEvent</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">java</span><span class="s2">.</span><span class="s1">awt</span><span class="s2">.</span><span class="s1">event</span><span class="s2">.</span><span class="s1">KeyAdapter</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">java</span><span class="s2">.</span><span class="s1">awt</span><span class="s2">.</span><span class="s1">event</span><span class="s2">.</span><span class="s1">KeyEvent</span><span class="s2">;</span>
+
+<span class="s0">public class </span><span class="s1">GamePanel </span><span class="s0">extends </span><span class="s1">JPanel </span><span class="s0">implements </span><span class="s1">ActionListener </span><span class="s2">{</span>
+    <span class="s0">private </span><span class="s1">Player player</span><span class="s2">;</span>
+    <span class="s0">private </span><span class="s1">Timer timer</span><span class="s2">;</span>
+    <span class="s0">private boolean </span><span class="s1">movingLeft </span><span class="s2">= </span><span class="s0">false</span><span class="s2">;</span>
+    <span class="s0">private boolean </span><span class="s1">movingRight </span><span class="s2">= </span><span class="s0">false</span><span class="s2">;</span>
+    <span class="s0">private boolean </span><span class="s1">isShooting </span><span class="s2">= </span><span class="s0">false</span><span class="s2">;</span>
+
+    <span class="s0">public </span><span class="s1">GamePanel</span><span class="s2">(){</span>
+        <span class="s1">setPreferredSize</span><span class="s2">(</span><span class="s0">new </span><span class="s1">Dimension</span><span class="s2">(</span><span class="s3">800</span><span class="s2">, </span><span class="s3">600</span><span class="s2">));</span>
+        <span class="s1">setBackground</span><span class="s2">(</span><span class="s1">Color</span><span class="s2">.</span><span class="s1">BLACK</span><span class="s2">);</span>
+        <span class="s1">player </span><span class="s2">= </span><span class="s0">new </span><span class="s1">Player</span><span class="s2">(</span><span class="s3">380</span><span class="s2">, </span><span class="s3">500</span><span class="s2">);</span>
+        <span class="s1">timer </span><span class="s2">= </span><span class="s0">new </span><span class="s1">Timer</span><span class="s2">(</span><span class="s3">16</span><span class="s2">, </span><span class="s0">this</span><span class="s2">);</span>
+        <span class="s1">timer</span><span class="s2">.</span><span class="s1">start</span><span class="s2">();</span>
+        <span class="s1">setFocusable</span><span class="s2">(</span><span class="s0">true</span><span class="s2">);</span>
+        <span class="s1">requestFocusInWindow</span><span class="s2">();</span>
+
+        <span class="s1">addKeyListener</span><span class="s2">(</span><span class="s0">new </span><span class="s1">KeyAdapter</span><span class="s2">() {</span>
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">keyPressed</span><span class="s2">(</span><span class="s1">KeyEvent e</span><span class="s2">) {</span>
+                <span class="s0">int </span><span class="s1">key </span><span class="s2">= </span><span class="s1">e</span><span class="s2">.</span><span class="s1">getKeyCode</span><span class="s2">();</span>
+                <span class="s0">if</span><span class="s2">(</span><span class="s1">key </span><span class="s2">== </span><span class="s1">KeyEvent</span><span class="s2">.</span><span class="s1">VK_LEFT</span><span class="s2">) </span><span class="s1">movingLeft </span><span class="s2">= </span><span class="s0">true</span><span class="s2">;</span>
+                <span class="s0">if</span><span class="s2">(</span><span class="s1">key </span><span class="s2">== </span><span class="s1">KeyEvent</span><span class="s2">.</span><span class="s1">VK_RIGHT</span><span class="s2">) </span><span class="s1">movingRight </span><span class="s2">= </span><span class="s0">true</span><span class="s2">;</span>
+                <span class="s0">if</span><span class="s2">(</span><span class="s1">key </span><span class="s2">== </span><span class="s1">KeyEvent</span><span class="s2">.</span><span class="s1">VK_SPACE</span><span class="s2">) </span><span class="s1">isShooting </span><span class="s2">= </span><span class="s0">true</span><span class="s2">;</span>
+            <span class="s2">}</span>
+            <span class="s1">@Override</span>
+            <span class="s0">public void </span><span class="s1">keyReleased</span><span class="s2">(</span><span class="s1">KeyEvent e</span><span class="s2">){</span>
+                <span class="s0">int </span><span class="s1">key </span><span class="s2">= </span><span class="s1">e</span><span class="s2">.</span><span class="s1">getKeyCode</span><span class="s2">();</span>
+                <span class="s0">if</span><span class="s2">(</span><span class="s1">key </span><span class="s2">== </span><span class="s1">KeyEvent</span><span class="s2">.</span><span class="s1">VK_LEFT</span><span class="s2">) </span><span class="s1">movingLeft </span><span class="s2">= </span><span class="s0">false</span><span class="s2">;</span>
+                <span class="s0">if</span><span class="s2">(</span><span class="s1">key </span><span class="s2">== </span><span class="s1">KeyEvent</span><span class="s2">.</span><span class="s1">VK_RIGHT</span><span class="s2">) </span><span class="s1">movingRight </span><span class="s2">= </span><span class="s0">false</span><span class="s2">;</span>
+                <span class="s0">if</span><span class="s2">(</span><span class="s1">key </span><span class="s2">== </span><span class="s1">KeyEvent</span><span class="s2">.</span><span class="s1">VK_SPACE</span><span class="s2">) </span><span class="s1">isShooting </span><span class="s2">= </span><span class="s0">false</span><span class="s2">;</span>
+            <span class="s2">}</span>
+        <span class="s2">});</span>
+
+    <span class="s2">}</span>
+
+    <span class="s1">@Override </span><span class="s0">protected void </span><span class="s1">paintComponent</span><span class="s2">(</span><span class="s1">Graphics g</span><span class="s2">){</span>
+        <span class="s0">super</span><span class="s2">.</span><span class="s1">paintComponent</span><span class="s2">(</span><span class="s1">g</span><span class="s2">);</span>
+        <span class="s1">player</span><span class="s2">.</span><span class="s1">draw</span><span class="s2">(</span><span class="s1">g</span><span class="s2">);</span>
+    <span class="s2">}</span>
+
+    <span class="s0">private void </span><span class="s1">update</span><span class="s2">(){</span>
+        <span class="s0">if</span><span class="s2">(</span><span class="s1">movingRight</span><span class="s2">) </span><span class="s1">player</span><span class="s2">.</span><span class="s1">moveRight</span><span class="s2">();</span>
+        <span class="s0">if</span><span class="s2">(</span><span class="s1">movingLeft</span><span class="s2">) </span><span class="s1">player</span><span class="s2">.</span><span class="s1">moveLeft</span><span class="s2">();</span>
+    <span class="s2">}</span>
+
+    <span class="s1">@Override </span><span class="s0">public void </span><span class="s1">actionPerformed</span><span class="s2">(</span><span class="s1">ActionEvent e</span><span class="s2">){</span>
+        <span class="s1">update</span><span class="s2">();</span>
+        <span class="s1">repaint</span><span class="s2">();</span>
+    <span class="s2">}</span>
+<span class="s2">}</span></pre>
+</body>
+</html>
