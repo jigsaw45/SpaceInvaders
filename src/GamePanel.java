@@ -169,7 +169,12 @@ public class GamePanel extends JPanel implements ActionListener {
 
         if (time % 1600 == 0) {
 
-            enemies.add(new Enemy(ranNum(0, 760), 0));
+            int baseEnemies = 1;
+            int extraEnemies = time / 12000; // ramps difficulty over time
+
+            for (int i = 0; i < baseEnemies + extraEnemies; i++) {
+                enemies.add(new Enemy(ranNum(0, 760), 0));
+            }
         }
     }
 
@@ -226,7 +231,7 @@ public class GamePanel extends JPanel implements ActionListener {
 
     private void spawnBoss() {
 
-        if (score >= 5000 && !bossSpawned) {
+        if (score >= 2000 && !bossSpawned) {
             boss = new Boss();
             bossSpawned = true;
         }
