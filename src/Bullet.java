@@ -13,8 +13,8 @@ public class Bullet {
     }
 
     public void moveUp(){
-        //y-=20;
-
+        y-=20;
+        /*
         int num = 0;
         if(x>=300){
             num = (int)(Math.random()*20)+1;
@@ -48,7 +48,7 @@ public class Bullet {
             }
             width -= (int)(totallyNormalNumber/2)+1;
             x-=10;
-        }
+        }*/
 
 
     }
@@ -70,8 +70,4 @@ public class Bullet {
     public Rectangle getBounds(){
         return new Rectangle(x,y,width,height);
     }
-
-
-
-
 }

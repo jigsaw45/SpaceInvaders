@@ -33,17 +33,17 @@ public class Enemy {
         if(y>=150&&y<=200){
             if(travelProgress<travelTotal){
                 if(travelRight){
-                    travelProgress+=5;
-                    x+=5;
+                    travelProgress+=4;
+                    x+=4;
                 }else{
-                    travelProgress+=5;
-                    x-=5;
+                    travelProgress+=4;
+                    x-=4;
                 }
             }else{
-                y+=5;
+                y+=2;
             }
         }else{
-            y+=5;
+            y+=2;
         }
     }
     public void getDirectionAndDistance(){

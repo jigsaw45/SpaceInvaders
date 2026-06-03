@@ -1,8 +1,8 @@
-import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.*;
 import java.awt.Rectangle;
 
 public class Player {
+
     private int x, y;
     private int width = 40;
     private int height = 40;
@@ -13,25 +13,28 @@ public class Player {
         y = startY;
     }
 
-    public void draw(Graphics g){
-        g.setColor(Color.BLUE);
-        g.fillRect(x, y, width, height);
-    }
-
     public void moveLeft(){
-        if(x > 0) {
+        if(x > 0){
             x -= speed;
         }
     }
 
     public void moveRight(){
-        if(x+width < 800) {
+        if(x + width < 800){
             x += speed;
         }
     }
 
-    public int getSpeed(){
-        return speed;
+    public Rectangle getBounds(){
+        return new Rectangle(x,y,width,height);
+    }
+
+    public int getX(){
+        return x;
+    }
+
+    public int getY(){
+        return y;
     }
 
     public int getWidth(){
@@ -41,6 +44,9 @@ public class Player {
     public int getHeight(){
         return height;
     }
-    public int getX(){return x;}
-    public int getY(){return y;}
+
+    public int getSpeed(){
+        return speed;
+    }
+
 }
