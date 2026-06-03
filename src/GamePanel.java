@@ -1,9 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
+import java.io.*;
 import java.util.ArrayList;
 
 public class GamePanel extends JPanel implements ActionListener {
@@ -25,12 +23,17 @@ public class GamePanel extends JPanel implements ActionListener {
     private int lives = 3;
 
     private boolean isGameOver = false;
-
     private long lastShot = 0;
 
     private Boss boss = null;
     private boolean bossSpawned = false;
 
+    // leaderboard
+    private String playerName = "PLAYER";
+    private ArrayList<String> names = new ArrayList<>();
+    private ArrayList<Integer> scores = new ArrayList<>();
+
+    // sprites
     private Sprite gameOverImage;
     private Sprite backgroundImage;
     private Sprite playerImage;
@@ -47,12 +50,14 @@ public class GamePanel extends JPanel implements ActionListener {
         playerImage = new Sprite("image-removebg-preview.png");
         bulletImage = new Sprite("ece9923d1a76efc5720579e31715d58c.png");
         enemyImage = new Sprite("download-removebg-preview.png");
-        bossImage = new Sprite("Tung-Tung-Tung-Sahur-Transparent-HQ.png");
+        bossImage = new Sprite("something.jpeg");
 
         player = new Player(380, 500);
 
         timer = new Timer(16, this);
         timer.start();
+
+        loadLeaderboard();
 
         setFocusable(true);
         requestFocusInWindow();
@@ -64,17 +69,9 @@ public class GamePanel extends JPanel implements ActionListener {
 
                 int key = e.getKeyCode();
 
-                if (key == KeyEvent.VK_LEFT) {
-                    movingLeft = true;
-                }
-
-                if (key == KeyEvent.VK_RIGHT) {
-                    movingRight = true;
-                }
-
-                if (key == KeyEvent.VK_SPACE) {
-                    isShooting = true;
-                }
+                if (key == KeyEvent.VK_LEFT) movingLeft = true;
+                if (key == KeyEvent.VK_RIGHT) movingRight = true;
+                if (key == KeyEvent.VK_SPACE) isShooting = true;
             }
 
             @Override
@@ -82,247 +79,82 @@ public class GamePanel extends JPanel implements ActionListener {
 
                 int key = e.getKeyCode();
 
-                if (key == KeyEvent.VK_LEFT) {
-                    movingLeft = false;
-                }
-
-                if (key == KeyEvent.VK_RIGHT) {
-                    movingRight = false;
-                }
-
-                if (key == KeyEvent.VK_SPACE) {
-                    isShooting = false;
-                }
+                if (key == KeyEvent.VK_LEFT) movingLeft = false;
+                if (key == KeyEvent.VK_RIGHT) movingRight = false;
+                if (key == KeyEvent.VK_SPACE) isShooting = false;
             }
         });
     }
 
-    public int ranNum(int min, int max) {
-        return (int) (Math.random() * (max - min + 1)) + min;
-    }
+    // ---------------- GAME LOOP ----------------
 
     @Override
-    protected void paintComponent(Graphics g) {
-
-        super.paintComponent(g);
-
-        if (backgroundImage != null) {
-            g.drawImage(backgroundImage.getImage(), 0, 0, 800, 600, this);
-        }
-
-        if (isGameOver || lives <= 0) {
-
-            g.drawImage(gameOverImage.getImage(), 0, 0, 800, 600, this);
-
-            g.setColor(Color.RED);
-            g.setFont(new Font("Comic Sans MS", Font.BOLD, 50));
-            g.drawString("YOU HAVE LOST", 50, 150);
-            g.drawString("-SCORE: " + score + "-", 50, 275);
-
-            return;
-        }
-
-        g.drawImage(
-                playerImage.getImage(),
-                player.getX(),
-                player.getY(),
-                player.getWidth(),
-                player.getHeight(),
-                this
-        );
-
-        for (Bullet bullet : bullets) {
-            g.drawImage(
-                    bulletImage.getImage(),
-                    bullet.getX(),
-                    bullet.getY(),
-                    20,
-                    20,
-                    this
-            );
-        }
-
-        g.setColor(Color.YELLOW);
-
-        for (EnemyBullet bullet : enemyBullets) {
-            g.fillRect(
-                    bullet.getX(),
-                    bullet.getY(),
-                    8,
-                    16
-            );
-        }
-
-        for (Enemy enemy : enemies) {
-
-            if (enemy.isAlive()) {
-
-                g.drawImage(
-                        enemyImage.getImage(),
-                        enemy.getX(),
-                        enemy.getY(),
-                        40,
-                        60,
-                        this
-                );
-            }
-        }
-
-        if (boss != null) {
-
-            g.drawImage(
-                    bossImage.getImage(),
-                    boss.getX(),
-                    boss.getY(),
-                    boss.getWidth(),
-                    boss.getHeight(),
-                    this
-            );
-
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("Comic Sans MS", Font.BOLD, 24));
-            g.drawString("BOSS HP: " + boss.getHealth(), 300, 90);
-        }
-
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Comic Sans MS", Font.BOLD, 20));
-        g.drawString("Score: " + score, 10, 30);
-
-        g.setColor(Color.RED);
-        g.setFont(new Font("Comic Sans MS", Font.BOLD, 30));
-        g.drawString("HEARTS: " + lives, 10, 65);
-
-        g.setColor(Color.ORANGE);
-        g.drawString(
-                "TIMER OF DEATH -- " + countDown / 1000 + " --",
-                250,
-                50
-        );
+    public void actionPerformed(ActionEvent e) {
+        update();
+        repaint();
     }
 
     private void update() {
 
-        if (isGameOver || lives <= 0) {
-            return;
-        }
+        if (isGameOver || lives <= 0) return;
 
         time += 16;
-
-        spawnEnemies();
-        updateTimer();
-        spawnBoss();
-        updateBoss();
-        updatePlayer();
-        updateBullets();
-        updateEnemyBullets();
-        updateEnemies();
-    }
-
-    private void spawnEnemies() {
-
-        if (time % 1600 == 0) {
-
-            enemies.add(new Enemy(ranNum(0, 760), 0));
-
-            for (int i = 0; i < time / 16000; i++) {
-                enemies.add(new Enemy(ranNum(0, 760), 0));
-            }
-        }
-    }
-
-    private void updateTimer() {
-
         countDown -= 16;
 
         if (countDown <= 0) {
-
-            countDown = 0;
-            isGameOver = true;
-            timer.stop();
-        }
-    }
-
-    private void spawnBoss() {
-
-        if (score >= 2500 && !bossSpawned) {
-
-            boss = new Boss();
-            bossSpawned = true;
-        }
-    }
-
-    private void updateBoss() {
-
-        if (boss == null) {
+            endGame();
             return;
         }
 
-        boss.move();
+        spawnEnemies();
+        spawnBoss();
 
-        for (int i = bullets.size() - 1; i >= 0; i--) {
-
-            Bullet bullet = bullets.get(i);
-
-            if (bullet.getBounds().intersects(boss.getBounds())) {
-
-                boss.damage();
-                bullets.remove(i);
-
-                if (boss.isDead()) {
-
-                    score += 10000;
-                    boss = null;
-                    return;
-                }
-            }
-        }
+        updatePlayer();
+        updateBullets();
+        updateEnemies();
+        updateEnemyBullets();
+        updateBoss();
     }
+
+    // ---------------- PLAYER ----------------
 
     private void updatePlayer() {
 
-        if (movingLeft) {
-            player.moveLeft();
-        }
+        if (movingLeft) player.moveLeft();
+        if (movingRight) player.moveRight();
 
-        if (movingRight) {
-            player.moveRight();
-        }
+        long now = System.currentTimeMillis();
 
-        long currentTime = System.currentTimeMillis();
+        if (isShooting && now - lastShot > 200) {
 
-        if (isShooting && currentTime - lastShot > 200) {
+            bullets.add(new Bullet(
+                    player.getX() + player.getWidth() / 2,
+                    player.getY()
+            ));
 
-            bullets.add(
-                    new Bullet(
-                            player.getX() + player.getWidth() / 2,
-                            player.getY()
-                    )
-            );
-
-            lastShot = currentTime;
+            lastShot = now;
         }
     }
+
+    // ---------------- BULLETS ----------------
 
     private void updateBullets() {
 
         for (int i = bullets.size() - 1; i >= 0; i--) {
 
-            Bullet bullet = bullets.get(i);
+            Bullet b = bullets.get(i);
+            b.moveUp();
 
-            bullet.moveUp();
-
-            if (bullet.isOffScreen()) {
-
+            if (b.isOffScreen()) {
                 bullets.remove(i);
                 continue;
             }
 
-            for (Enemy enemy : enemies) {
+            for (Enemy e : enemies) {
 
-                if (enemy.isAlive() &&
-                        bullet.getBounds().intersects(enemy.getBounds())) {
+                if (e.isAlive() && b.getBounds().intersects(e.getBounds())) {
 
-                    enemy.setAlive(false);
+                    e.setAlive(false);
                     bullets.remove(i);
                     score += 100;
                     break;
@@ -331,77 +163,272 @@ public class GamePanel extends JPanel implements ActionListener {
         }
     }
 
-    private void updateEnemyBullets() {
+    // ---------------- ENEMIES ----------------
 
-        for (int i = enemyBullets.size() - 1; i >= 0; i--) {
+    private void spawnEnemies() {
 
-            EnemyBullet bullet = enemyBullets.get(i);
+        if (time % 1600 == 0) {
 
-            bullet.moveDown();
-
-            if (bullet.isOffScreen()) {
-
-                enemyBullets.remove(i);
-                continue;
-            }
-
-            if (bullet.getBounds().intersects(player.getBounds())) {
-
-                lives--;
-                enemyBullets.remove(i);
-
-                if (lives <= 0) {
-                    isGameOver = true;
-                }
-            }
+            enemies.add(new Enemy(ranNum(0, 760), 0));
         }
     }
 
     private void updateEnemies() {
 
-        for (Enemy enemy : enemies) {
+        for (Enemy e : enemies) {
 
-            if (!enemy.isAlive()) {
+            if (!e.isAlive()) continue;
+
+            if (e.getBounds().intersects(player.getBounds())) {
+                damagePlayer();
+                e.setAlive(false);
                 continue;
             }
 
-            if (enemy.getBounds().intersects(player.getBounds())) {
-
-                lives--;
-                enemy.setAlive(false);
-
-                if (lives <= 0) {
-                    isGameOver = true;
-                }
-
-                continue;
-            }
-
-            enemy.moveDownAndReverse();
+            e.moveDownAndReverse();
 
             if (Math.random() < 0.002) {
 
-                enemyBullets.add(
-                        new EnemyBullet(
-                                enemy.getX() + enemy.getWidth() / 2,
-                                enemy.getY() + enemy.getHeight()
-                        )
-                );
+                enemyBullets.add(new EnemyBullet(
+                        e.getX() + e.getWidth() / 2,
+                        e.getY() + e.getHeight()
+                ));
             }
         }
 
-        for (int i = enemies.size() - 1; i >= 0; i--) {
+        enemies.removeIf(e -> !e.isAlive());
+    }
 
-            if (!enemies.get(i).isAlive()) {
-                enemies.remove(i);
+    // ---------------- ENEMY BULLETS ----------------
+
+    private void updateEnemyBullets() {
+
+        for (int i = enemyBullets.size() - 1; i >= 0; i--) {
+
+            EnemyBullet b = enemyBullets.get(i);
+
+            b.moveDown();
+
+            if (b.isOffScreen()) {
+                enemyBullets.remove(i);
+                continue;
+            }
+
+            if (b.getBounds().intersects(player.getBounds())) {
+
+                enemyBullets.remove(i);
+                damagePlayer();
             }
         }
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
+    // ---------------- BOSS ----------------
 
-        update();
-        repaint();
+    private void spawnBoss() {
+
+        if (score >= 5000 && !bossSpawned) {
+            boss = new Boss();
+            bossSpawned = true;
+        }
+    }
+
+    private void updateBoss() {
+
+        if (boss == null) return;
+
+        boss.move();
+
+        for (int i = bullets.size() - 1; i >= 0; i--) {
+
+            Bullet b = bullets.get(i);
+
+            if (b.getBounds().intersects(boss.getBounds())) {
+
+                boss.damage();
+                bullets.remove(i);
+
+                if (boss.isDead()) {
+
+                    score += 10000;
+                    boss = null;
+                }
+
+                return;
+            }
+        }
+    }
+
+    // ---------------- DAMAGE ----------------
+
+    private void damagePlayer() {
+
+        lives--;
+
+        if (lives <= 0) {
+            endGame();
+        }
+    }
+
+    private void endGame() {
+
+        isGameOver = true;
+        timer.stop();
+
+        addScore(playerName, score);
+    }
+
+    // ---------------- DRAW ----------------
+
+    @Override
+    protected void paintComponent(Graphics g) {
+
+        super.paintComponent(g);
+
+        g.drawImage(backgroundImage.getImage(), 0, 0, 800, 600, this);
+
+        if (isGameOver) {
+
+            g.drawImage(gameOverImage.getImage(), 0, 0, 800, 600, this);
+
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Arial", Font.BOLD, 30));
+
+            g.drawString("Score: " + score, 50, 200);
+
+            drawLeaderboard(g);
+            return;
+        }
+
+        g.drawImage(playerImage.getImage(),
+                player.getX(),
+                player.getY(),
+                player.getWidth(),
+                player.getHeight(),
+                this);
+
+        for (Bullet b : bullets) {
+            g.drawImage(bulletImage.getImage(), b.getX(), b.getY(), 20, 20, this);
+        }
+
+        for (Enemy e : enemies) {
+            g.drawImage(enemyImage.getImage(), e.getX(), e.getY(), 40, 60, this);
+        }
+
+        for (EnemyBullet b : enemyBullets) {
+            g.setColor(Color.YELLOW);
+            g.fillRect(b.getX(), b.getY(), 8, 16);
+        }
+
+        if (boss != null) {
+            g.drawImage(bossImage.getImage(),
+                    boss.getX(),
+                    boss.getY(),
+                    boss.getWidth(),
+                    boss.getHeight(),
+                    this);
+        }
+
+        g.setColor(Color.WHITE);
+        g.drawString("Score: " + score, 10, 20);
+        g.drawString("Lives: " + lives, 10, 40);
+        g.drawString("Time: " + countDown / 1000, 10, 60);
+    }
+
+    // ---------------- LEADERBOARD ----------------
+
+    private void loadLeaderboard() {
+
+        try {
+
+            File f = new File("leaderboard.txt");
+
+            if (!f.exists()) return;
+
+            BufferedReader br = new BufferedReader(new FileReader(f));
+
+            String line;
+
+            while ((line = br.readLine()) != null) {
+
+                String[] p = line.split(" ");
+
+                names.add(p[0]);
+                scores.add(Integer.parseInt(p[1]));
+            }
+
+            br.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void addScore(String name, int score) {
+
+        names.add(name);
+        scores.add(score);
+
+        for (int i = 0; i < scores.size(); i++) {
+            for (int j = i + 1; j < scores.size(); j++) {
+
+                if (scores.get(j) > scores.get(i)) {
+
+                    int t = scores.get(i);
+                    scores.set(i, scores.get(j));
+                    scores.set(j, t);
+
+                    String tn = names.get(i);
+                    names.set(i, names.get(j));
+                    names.set(j, tn);
+                }
+            }
+        }
+
+        while (scores.size() > 5) {
+            scores.remove(scores.size() - 1);
+            names.remove(names.size() - 1);
+        }
+
+        saveLeaderboard();
+    }
+
+    private void saveLeaderboard() {
+
+        try {
+
+            FileWriter w = new FileWriter("leaderboard.txt");
+
+            for (int i = 0; i < names.size(); i++) {
+                w.write(names.get(i) + " " + scores.get(i) + "\n");
+            }
+
+            w.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void drawLeaderboard(Graphics g) {
+
+        g.setFont(new Font("Arial", Font.BOLD, 20));
+        g.setColor(Color.CYAN);
+
+        g.drawString("LEADERBOARD:", 500, 150);
+
+        for (int i = 0; i < names.size(); i++) {
+
+            g.drawString(
+                    (i + 1) + ". " + names.get(i) + " - " + scores.get(i),
+                    500,
+                    180 + i * 25
+            );
+        }
+    }
+
+    // ---------------- UTIL ----------------
+
+    public int ranNum(int min, int max) {
+        return (int) (Math.random() * (max - min + 1)) + min;
     }
 }
